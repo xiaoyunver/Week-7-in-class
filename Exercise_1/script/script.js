@@ -24,13 +24,15 @@ plot.append('circle')
     .attr('cy',height/2)
     .attr('r',50);
 
-plot.append('circle')
+var group = plot.append('g');
+
+group.append('circle')
     .attr('cx',400)
     .attr('cy',height/2)
     .attr('r',50)
     .attr('class','no-fill');
 
-plot.append('circle')
+group.append('circle')
     .attr('cx',550)
     .attr('cy',height/2)
     .attr('r',50);
