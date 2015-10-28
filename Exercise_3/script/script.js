@@ -14,7 +14,7 @@ var plot = d3.select('.canvas')
 /* Scales */
 var scaleX = d3.scale.log().range([0,width]),
     scaleY = d3.scale.log().range([height,0]),
-    scaleR = d3.scale.sqrt().range([10,50]);
+    scaleR = d3.scale.sqrt().range([10,50]);//????what is that!?
 
 //Axis generator
 var axisX = d3.svg.axis()
@@ -28,7 +28,7 @@ var axisY = d3.svg.axis()
 
 
 
-queue()
+queue()//two string start together and call back together
     .defer(d3.csv,'data/world_bank_1995_gdp_co2.csv',parse)
     .defer(d3.csv,'data/world_bank_2010_gdp_co2.csv',parse)
     .await(function(err,data1995,data2010){
@@ -36,7 +36,7 @@ queue()
         scaleX.domain( d3.extent(data1995, function(d){
             return d.gdpPerCap; })
         );
-        scaleY.domain( d3.extent(data1995, function(d){ return d.co2PerCap; }));
+        scaleY.domain( d3.extent(data1995, function(d){ return d.co2PerCap; }));//learn extent by self
         scaleR.domain( d3.extent(data1995, function(d){ return d.co2Total; }));
 
         //Draw axes
@@ -51,12 +51,75 @@ queue()
         console.log(data1995);
         console.log(data2010);
 
+        d3.selectAll('.btn').on('click',function()
+        {
+            //find out which year is clicked
+            var year = d3.select(this).attr('id');//????
+
+            if (year == 'year-1995')
+            {
+                draw(data1995);
+            }else{
+                draw(data2010);
+            }
+        })
+
 
 
     });
 
 function draw(data){
+    console.log(data);
 
+    var nodes = plot.selectAll('.country')
+        .data(data, function(d) {return d. cCode});//this computes a join, resulting in enter,
+
+    //enter set
+    //var nodesEnter = nodes.enter(); //enter set, empty placeholders
+
+    //this will position the nodes in the right x-y coordinates
+    var nodesEnter = nodes.enter().append('g')
+        .attr('class','country')
+        /*.attr('transform', function(d){
+            return 'translate('+scaleX(d.gdpPerCap) + ',' + scaleY(d.co2PerCap) +')';
+        });*/
+        .on('click', function(d){
+            console.log(d);
+            nodes.selectAll('circle')
+                .style('stroke','rgb(80,80,80)')
+
+            d3.select(this).select('circle')
+                .style('stroke','red')
+                .style('fill','rgb(255,0,0,.2)')
+        })
+    nodesEnter.append('circle')
+        .attr('r', function (d){
+            return scaleR(d.co2Total);
+        })
+        .style('fill', 'rgba(80,80,80,.1)')
+        .style('stroke','rgb(50,50,50)')
+        .style('stroke-width','1px');
+    nodesEnter.append('text')
+        .text(function (d){
+            return d.cCode
+        })
+        .attr('text-anchor','middle')
+        .style('font-size','8px')
+        .style('fill','rgb(80,80,80)');
+    //exit set
+    nodes.exit().remove();
+
+    //update set
+    //update 'transform' attribute, and "r" attribute of circles
+    nodes
+        .transition()
+        .attr('transform', function (d) {
+            return 'translate(' + scaleX(d.gdpPerCap) + ',' + scaleY(d.co2PerCap) +')';
+        })
+        .select('circle')
+        .attr('r',function (d) {
+            return scaleR (d.co2Total);
+        })
 
 }
 
